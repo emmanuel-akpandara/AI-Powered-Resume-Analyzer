@@ -11,7 +11,7 @@ Watch the demo <a href="https://youtu.be/yXvKTODEMew"> HERE </a>
 Resume Analyzer transforms traditional keyword-based job search into a smarter, personalized experience using:
 
 -  **AI Embedding Matching**: Resumes are converted to dense vector representations using language model embeddings. These vectors are semantically compared to job descriptions using cosine similarity.
--  **Pinecone Integration**: Job postings are stored as high-dimensional vectors in Pinecone — a cloud-native vector database. Real-time similarity queries retrieve the most relevant matches.
+-  **Pinecone Integration**: Job postings are stored as high-dimensional vectors in Pinecone, a cloud-native vector database. Real-time similarity queries retrieve the most relevant matches.
 -  **PDF Resume Upload**: Users submit resumes via a Blazor-based frontend. The backend parses and embeds the content, routing it through the match pipeline.
 
 ---
