@@ -1,6 +1,6 @@
 #  Resume Analyzer
 
-AI-powered platform for intelligent job matching based on resume content, skill embeddings, and semantic relevance. This project streamlines the job discovery process by comparing user-uploaded resumes against a dynamic job vector database — surfacing the most relevant roles instantly.
+This is an AI-powered platform for intelligent job matching based on resume content, skill embeddings, and semantic relevance. This project streamlines the job discovery process by comparing user-uploaded resumes against a dynamic job vector database, showing the most relevant roles instantly.
 
 Watch the demo <a href="https://youtu.be/yXvKTODEMew"> HERE </a>
 
