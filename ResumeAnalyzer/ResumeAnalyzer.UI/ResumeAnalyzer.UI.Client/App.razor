@@ -1,0 +1,10 @@
+﻿@using ResumeAnalyzer.UI.Client.Shared
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+    </Found>
+    <NotFound>
+        <RedirectToMatch />
+    </NotFound>
+</Router>

@@ -1,0 +1,73 @@
+﻿@using ResumeAnalyzer.Shared.Models
+
+@if (Match is not null)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.6);" tabindex="-1" @onclick="() => OnClose.InvokeAsync()">
+        <div class="modal-dialog modal-lg" @onclick:stopPropagation>
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+
+                <div class="modal-header border-0">
+                    <div>
+                        <h4 class="modal-title text-primary fw-bold">@Match.Title</h4>
+                        <p class="mb-0 text-muted"><strong>@Match.Company</strong> — @Match.Location</p>
+                    </div>
+                    <button type="button" class="btn-close" @onclick="() => OnClose.InvokeAsync()" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <p class="mb-3">
+                        <strong>Match Score:</strong>
+                        <span class="badge @GetScoreBadgeClass() fs-6 px-3 py-2 rounded-pill">
+                            @Math.Round(Match.Score * 100, 1)% match
+                        </span>
+                    </p>
+
+                    @if (Match.MatchedSkills?.Any() == true)
+                    {
+                        <div class="mb-4">
+                            <h6 class="fw-bold">Matched Skills:</h6>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                @foreach (var skill in Match.MatchedSkills)
+                                {
+                                    <span class="badge bg-light text-dark border">@skill</span>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold">Why this job matches you:</h6>
+                        <p class="text-muted">@Match.Explanation</p>
+                    </div>
+
+                    <details class="mb-4">
+                        <summary class="fw-bold text-primary mb-2" style="cursor: pointer;">View full job description</summary>
+                        <p class="mt-2 text-muted">@Match.Description</p>
+                    </details>
+                </div>
+
+                <div class="modal-footer border-0">
+                    <a href="@Match.Link" target="_blank" class="btn btn-success rounded-pill px-4">
+                        <i class="fas fa-external-link-alt me-2"></i> Apply Now
+                    </a>
+                    <button class="btn btn-secondary rounded-pill px-4" @onclick="() => OnClose.InvokeAsync()">
+                        <i class="fas fa-times me-2"></i> Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public JobMatchDto Match { get; set; } = default!;
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string GetScoreBadgeClass() => Match.Score switch
+    {
+        >= 0.85f => "bg-success",
+        >= 0.7f => "bg-warning text-dark",
+        _ => "bg-danger"
+    };
+}

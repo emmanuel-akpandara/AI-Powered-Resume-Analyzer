@@ -1,0 +1,189 @@
+﻿@page "/match"
+@page "/"
+@rendermode InteractiveServer
+@using ResumeAnalyzer.UI.Client.Components
+@using ResumeAnalyzer.UI.Client.Services
+@using ResumeAnalyzer.Shared.Models
+@inject ResumeService ResumeService
+@inject IJSRuntime JSRuntime
+
+<div class="container py-5">
+    <div class="text-center mb-4">
+        <h1 class="display-5 fw-bold"><i class="fas fa-search me-2"></i>Resume Matcher</h1>
+        <p class="text-muted">Upload your PDF resume to find matching jobs instantly</p>
+    </div>
+
+    <div class="card p-4 mb-4 shadow-sm">
+        <InputFile OnChange="OnFileSelected" accept=".pdf" class="form-control mb-3" />
+
+        <div class="d-flex gap-2 justify-content-center">
+            <button class="btn btn-primary" @onclick="SubmitFile" disabled="@(!CanSubmit)">
+                @if (Loading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    <p>Analyzing...</p>
+                                }
+                else
+                {
+                    <i class="fas fa-rocket me-2"></i>
+                    <p>Analyze Resume</p>
+                                }
+            </button>
+
+            <button class="btn btn-secondary" @onclick="ResetState">
+                <i class="fas fa-redo me-2"></i> Reset
+            </button>
+        </div>
+    </div>
+
+    @if (selectedFile != null && !Loading)
+    {
+        <div class="alert alert-success d-flex align-items-center">
+            <i class="fas fa-file-pdf me-2"></i>
+            <strong>Selected:</strong> @selectedFile.Name (@(selectedFile.Size / 1024) KB)
+        </div>
+    }
+
+    @if (Loading)
+    {
+        <div class="text-center my-4">
+            <div class="spinner-border text-primary mb-2" role="status"></div>
+            <p class="text-muted">Analyzing your resume…</p>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger mt-3" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i> @ErrorMessage
+        </div>
+    }
+
+    @if (Matches.Any())
+    {
+        <div class="mt-5">
+            <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-trophy text-warning me-2" style="font-size: 1.5rem;"></i>
+                <h5 class="mb-0">✅ Found @Matches.Count job matches</h5>
+            </div>
+
+            <div class="row g-4">
+                @foreach (var match in Matches)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <JobMatchCard Match="match" OnSelected="OpenModal" />
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else if (!Loading && HasUploaded && string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-info mt-5 text-center">
+            <i class="fas fa-info-circle me-2"></i> No matches found for this resume.
+        </div>
+    }
+</div>
+
+<MatchModal Match="SelectedMatch" OnClose="() => SelectedMatch = null" />
+
+@code {
+    private List<JobMatchDto> Matches = new();
+    private JobMatchDto? SelectedMatch;
+    private IBrowserFile? selectedFile;
+
+    private bool Loading = false;
+    private bool HasUploaded = false;
+    private string ErrorMessage = string.Empty;
+
+    private bool CanSubmit => !Loading && selectedFile is not null;
+
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            selectedFile = e.File;
+
+            // Reset state
+            Matches.Clear();
+            ErrorMessage = string.Empty;
+            HasUploaded = false;
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error selecting file: {ex.Message}";
+            selectedFile = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SubmitFile()
+    {
+        if (selectedFile is null)
+        {
+            ErrorMessage = "Please select a file first.";
+            return;
+        }
+
+        if (!selectedFile.Name.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+        {
+            ErrorMessage = "File must be a PDF.";
+            return;
+        }
+
+        if (selectedFile.Size > 10_000_000)
+        {
+            ErrorMessage = "File size exceeds 10MB.";
+            return;
+        }
+
+        try
+        {
+            Loading = true;
+            StateHasChanged();
+
+            using var stream = selectedFile.OpenReadStream(maxAllowedSize: 10_000_000);
+            using var content = new MultipartFormDataContent();
+            var streamContent = new StreamContent(stream);
+
+            streamContent.Headers.ContentType = 
+                new System.Net.Http.Headers.MediaTypeHeaderValue(selectedFile.ContentType ?? "application/pdf");
+            content.Add(streamContent, "file", selectedFile.Name);
+
+            Matches = await ResumeService.UploadResumeAsync(content);
+            HasUploaded = true;
+        }
+        catch (HttpRequestException ex)
+        {
+            ErrorMessage = $"Network error: {ex.Message}";
+        }
+        catch (TaskCanceledException)
+        {
+            ErrorMessage = "Upload timeout. Please try again.";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ResetState()
+    {
+        selectedFile = null;
+        Matches.Clear();
+        SelectedMatch = null;
+        ErrorMessage = string.Empty;
+        Loading = false;
+        HasUploaded = false;
+        StateHasChanged();
+    }
+
+    private void OpenModal(JobMatchDto match) => SelectedMatch = match;
+}

@@ -1,0 +1,39 @@
+﻿@using ResumeAnalyzer.Shared.Models
+
+<div class="card h-100 shadow-sm border-0 rounded-4" style="cursor: pointer;" @onclick="() => OnSelected.InvokeAsync(Match)">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <h5 class="card-title fw-bold mb-0">@Match.Title</h5>
+            <span class="badge @GetScoreClass() rounded-pill px-3 py-2">
+                @Math.Round(Match.Score * 100, 1)% match
+            </span>
+        </div>
+
+        <h6 class="text-primary mb-2">@Match.Company</h6>
+        <p class="text-muted small mb-3">
+            <i class="fas fa-map-marker-alt me-1"></i> @Match.Location
+        </p>
+
+        @if (Match.MatchedSkills?.Any() == true)
+        {
+            <div class="d-flex flex-wrap gap-2 mt-2">
+                @foreach (var skill in Match.MatchedSkills.Take(4))
+                {
+                    <span class="badge bg-light text-dark border">@skill</span>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public JobMatchDto Match { get; set; } = default!;
+    [Parameter] public EventCallback<JobMatchDto> OnSelected { get; set; }
+
+    private string GetScoreClass() => Match.Score switch
+    {
+        >= 0.85f => "bg-success", // 🟢 high confidence
+        >= 0.7f => "bg-warning", // 🟡 medium
+        _ => "bg-danger"   // 🔴 low
+    };
+}

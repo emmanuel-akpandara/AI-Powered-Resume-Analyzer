@@ -1,0 +1,37 @@
+﻿@page "/upload"
+@inject HttpClient Http
+@rendermode InteractiveWebAssembly
+
+
+<h3>Upload Resume</h3>
+
+<input type="file" @onchange="UploadFile" />
+@if (!string.IsNullOrEmpty(uploadedText))
+{
+    <h4>Resume Text</h4>
+    <pre>@uploadedText</pre>
+}
+
+@code {
+    private string uploadedText = "";
+
+    private async Task UploadFile(ChangeEventArgs e)
+    {
+        var file = ((IBrowserFile)e.Value)!;
+        var content = new MultipartFormDataContent();
+        var fileContent = new StreamContent(file.OpenReadStream(5 * 1024 * 1024)); // Max 5MB
+
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+        content.Add(fileContent, "file", file.Name);
+
+        var response = await Http.PostAsync("api/resume/upload", content);
+        var result = await response.Content.ReadFromJsonAsync<UploadResponse>();
+        uploadedText = result?.Content ?? "Failed to read content";
+    }
+
+    public class UploadResponse
+    {
+        public string FileName { get; set; }
+        public string Content { get; set; }
+    }
+}
