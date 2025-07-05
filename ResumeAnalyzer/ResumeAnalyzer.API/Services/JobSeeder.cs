@@ -13,19 +13,19 @@ public class JobSeeder
 
     public async Task SeedJobsAsync(string excelPath)
     {
-        // 🔍 TEST CONNECTION FIRST - ADD THIS
+        // TEST CONNECTION
         Console.WriteLine("🔗 Testing Pinecone connection...");
         var connectionTest = await _pineconeService.TestConnectionAsync();
         if (!connectionTest)
         {
-            Console.WriteLine("❌ All authentication methods failed. Check your API key in Pinecone console.");
-            Console.WriteLine("💡 Common fixes:");
+            Console.WriteLine("All authentication methods failed. Check your API key in Pinecone console.");
+            Console.WriteLine("Common fixes:");
             Console.WriteLine("   - Verify API key is correct and active");
             Console.WriteLine("   - Check if key has write permissions");
             Console.WriteLine("   - Try creating a new API key");
             return;
         }
-        Console.WriteLine("✅ Pinecone connection successful! Starting seeding process...");
+        Console.WriteLine("Pinecone connection successful! Starting seeding process...");
 
         using var workbook = new XLWorkbook(excelPath);
         var sheet = workbook.Worksheets.FirstOrDefault();
@@ -70,7 +70,7 @@ Description: {description}";
 
                 var vector = await _embeddingService.GetEmbeddingAsync(combinedText);
 
-                // 🏷️ Attach useful display metadata
+                // useful display metadata
                 var metadata = new Dictionary<string, object?>
                 {
                     ["title"] = title,
