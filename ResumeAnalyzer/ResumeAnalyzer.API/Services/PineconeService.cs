@@ -147,7 +147,7 @@ public class PineconeService
                 MatchedSkills = metadata.TryGetProperty("skills", out var skillsProp)
                     ? (skillsProp.ToString()?.Split(',')?.Select(s => s.Trim()).ToArray() ?? [])
                     : [],
-                Explanation = "" // Leave empty for now; fill in controller using your explanation service
+                Explanation = "" 
             });
         }
 
