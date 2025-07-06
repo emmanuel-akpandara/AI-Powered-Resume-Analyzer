@@ -14,7 +14,7 @@ public class JobSeeder
     public async Task SeedJobsAsync(string excelPath)
     {
         // TEST CONNECTION
-        Console.WriteLine("🔗 Testing Pinecone connection...");
+        Console.WriteLine("Testing Pinecone connection...");
         var connectionTest = await _pineconeService.TestConnectionAsync();
         if (!connectionTest)
         {
@@ -103,6 +103,6 @@ Description: {description}";
             }
         }
 
-        Console.WriteLine($"🌟 Done! Seeded {counter} enriched jobs into Pinecone.");
+        Console.WriteLine($"Done! Seeded {counter} enriched jobs into Pinecone.");
     }
 }
