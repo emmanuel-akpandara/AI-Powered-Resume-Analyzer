@@ -43,7 +43,7 @@ public class JobSeeder
             try
             {
                 var id = Guid.NewGuid().ToString();
-                // Extract relevant fields
+                // Extracting relevant fields
                 var title = row.Cell("AI").GetString(); // Example: title
                 var description = row.Cell("R").GetString(); // descriptionText
                 var industry = row.Cell("U").GetString(); // industries
@@ -58,7 +58,7 @@ public class JobSeeder
                 var postedAt = row.Cell("AD").GetString();
                 var link = row.Cell("AB").GetString(); // LinkedIn job link
 
-                // ⛏️ Construct semantic-rich string for vector embedding
+                
                 string combinedText = $@"
 Title: {title}
 Industry: {industry}
@@ -70,7 +70,7 @@ Description: {description}";
 
                 var vector = await _embeddingService.GetEmbeddingAsync(combinedText);
 
-                // useful display metadata
+                // useful display metadata and also showing in the front end
                 var metadata = new Dictionary<string, object?>
                 {
                     ["title"] = title,
